@@ -21,6 +21,30 @@ from pathlib import Path
 import subprocess
 import sys
 
+#123
+# Global warning suppression (your existing code)
+warnings.filterwarnings('ignore')
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
+# Suppress specific warning categories
+warnings.filterwarnings('ignore', category=UserWarning)
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+warnings.filterwarnings('ignore', category=FutureWarning)
+warnings.filterwarnings('ignore', category=RuntimeWarning)
+
+# Import streamlit
+import streamlit as st
+
+# ========== SUPPRESS STREAMLIT UI MESSAGES ==========
+SUPPRESS_UI_MESSAGES = True  # Set to False when debugging
+
+if SUPPRESS_UI_MESSAGES:
+    # Replace Streamlit message functions with no-ops
+    st.error = lambda *args, **kwargs: None
+    st.warning = lambda *args, **kwargs: None
+    st.success = lambda *args, **kwargs: None
+    st.info = lambda *args, **kwargs: None
+
 try:
     import cv2
 except ImportError:
