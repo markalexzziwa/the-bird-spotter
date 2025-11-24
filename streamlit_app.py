@@ -1539,69 +1539,82 @@ def main():
         if not detections:
             st.info("🔍 No birds detected in this image")
         else:
-            # Metrics
-            col_metric1, col_metric2 = st.columns(2)
-            with col_metric1:
-                st.markdown('<div class="glass-metric">', unsafe_allow_html=True)
-                st.metric("Birds Identified", len(detections))
-                st.markdown('</div>', unsafe_allow_html=True)
+            # Filter out low confidence predictions (below 50%)
+            valid_detections = []
+            valid_classifications = []
         
-            with col_metric2:
-                st.markdown('<div class="glass-metric">', unsafe_allow_html=True)
-                if classifications:
-                    avg_confidence = sum(conf for _, conf in classifications) / len(classifications)
-                    st.metric("Avg Confidence", f"{avg_confidence:.1%}")
-                else:
-                    st.metric("Avg Confidence", "N/A")
-                st.markdown('</div>', unsafe_allow_html=True)
+            for (box, det_conf), (species, class_conf) in zip(detections, classifications):
+                if class_conf >= 0.5:  # Only keep predictions with 50%+ confidence
+                    valid_detections.append((box, det_conf))
+                    valid_classifications.append((species, class_conf))
         
-            # ========== LOW CONFIDENCE WARNING ==========
-            if classifications and any(conf < 0.5 for _, conf in classifications):
-                st.warning("""
-                ⚠️ **Low Confidence Identification**
+            # If no valid detections after filtering
+            if not valid_detections:
+                st.error("""
+                🚫 **No Bird Confidently Detected**
             
-                The bird identification confidence is below 50%. This prediction may not be reliable.
-                Please consider:
-                - Uploading a clearer image
-                - Ensuring the bird is clearly visible
-                - Trying a different angle or lighting
+                The AI detected something but confidence is too low (below 50%) to make a reliable identification.
+            
+                Please try:
+                - A clearer, closer photo of the bird
+                - Better lighting conditions
+                - Ensuring the bird is fully visible
+                - A different angle or background
                 """)
+            
+                # Don't set any species for video generation
+                st.session_state.selected_species_for_video = None
+            else:
+                # Metrics for valid detections only
+                col_metric1, col_metric2 = st.columns(2)
+                with col_metric1:
+                    st.markdown('<div class="glass-metric">', unsafe_allow_html=True)
+                    st.metric("Birds Confidently Identified", len(valid_detections))
+                    st.markdown('</div>', unsafe_allow_html=True)
+            
+                with col_metric2:
+                    st.markdown('<div class="glass-metric">', unsafe_allow_html=True)
+                    if valid_classifications:
+                        avg_confidence = sum(conf for _, conf in valid_classifications) / len(valid_classifications)
+                        st.metric("Avg Confidence", f"{avg_confidence:.1%}")
+                    else:
+                        st.metric("Avg Confidence", "N/A")
+                    st.markdown('</div>', unsafe_allow_html=True)
+            
+                # Show filtered results
+                for i, ((box, det_conf), (species, class_conf)) in enumerate(zip(valid_detections, valid_classifications)):
+                    st.markdown("---")
+                
+                    # Bird information with confidence-based styling
+                    confidence_level = "high" if class_conf >= 0.7 else "medium"
+                
+                    st.markdown(f'<div class="glass-card">', unsafe_allow_html=True)
+                
+                    # Different emoji based on confidence
+                    confidence_emoji = "✅" if class_conf >= 0.7 else "⚠️"
+                
+                    st.markdown(f"### {confidence_emoji} Bird #{i+1} - {species}")
+                
+                    # Different background color based on confidence
+                    confidence_color = "#d4edda" if class_conf >= 0.7 else "#fff3cd"
+                
+                    st.markdown(f"""
+                    <div style="padding: 15px; background: {confidence_color}; border-radius: 8px; border-left: 4px solid {'#28a745' if class_conf >= 0.7 else '#ffc107'}">
+                        <h4>ResNet34 Model Prediction</h4>
+                        <p><strong>Species:</strong> {species}</p>
+                        <p><strong>Confidence:</strong> {class_conf:.1%} <small>({confidence_level} confidence)</small></p>
+                        <p><strong>Detection Score:</strong> {det_conf:.1%}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                
+                    # Store the species for video generation (only for confident predictions)
+                    st.session_state.selected_species_for_video = species
         
-            # Process each bird
-            for i, ((box, det_conf), (species, class_conf)) in enumerate(zip(detections, classifications)):
-                st.markdown("---")
-            
-                # Bird information with confidence-based styling
-                confidence_level = "high" if class_conf >= 0.7 else "medium" if class_conf >= 0.5 else "low"
-            
-                st.markdown(f'<div class="glass-card">', unsafe_allow_html=True)
-            
-                # Different emoji based on confidence
-                if class_conf >= 0.7:
-                    confidence_emoji = "✅"
-                elif class_conf >= 0.5:
-                    confidence_emoji = "⚠️"
-                else:
-                    confidence_emoji = "❓"
-            
-                st.markdown(f"### {confidence_emoji} Bird #{i+1} - {species}")
-            
-                # Different background color based on confidence
-                confidence_color = "#d4edda" if class_conf >= 0.7 else "#fff3cd" if class_conf >= 0.5 else "#f8d7da"
-            
-                st.markdown(f"""
-                <div style="padding: 15px; background: {confidence_color}; border-radius: 8px; border-left: 4px solid {'#28a745' if class_conf >= 0.7 else '#ffc107' if class_conf >= 0.5 else '#dc3545'}">
-                    <h4>ResNet34 Model Prediction</h4>
-                    <p><strong>Species:</strong> {species}</p>
-                    <p><strong>Confidence:</strong> {class_conf:.1%} <small>({confidence_level} confidence)</small></p>
-                    <p><strong>Detection Score:</strong> {det_conf:.1%}</p>
-                    {f'<p style="color: #856404;"><strong>Note:</strong> Low confidence prediction - consider retaking the photo</p>' if class_conf < 0.5 else ''}
-                </div>
-                """, unsafe_allow_html=True)
-                st.markdown('</div>', unsafe_allow_html=True)
-            
-                # Store the species for video generation (even if low confidence)
-                st.session_state.selected_species_for_video = species
+            # Show info about filtered out low-confidence detections
+            low_confidence_count = len(detections) - len(valid_detections)
+            if low_confidence_count > 0:
+                st.info(f"ℹ️ {low_confidence_count} low-confidence detection(s) were filtered out (confidence < 50%)")
         
             # Reset button
             if st.button("🔄 Analyze Another Image", type="secondary", use_container_width=True):
@@ -1612,6 +1625,7 @@ def main():
                 st.session_state.generated_video_path = None
                 st.session_state.generated_story = None
                 st.session_state.used_images = None
+                st.session_state.selected_species_for_video = None
                 st.rerun()
     # Story Video Generation Section
     st.markdown("---")
