@@ -35,7 +35,7 @@ warnings.filterwarnings('ignore', category=RuntimeWarning)
 # Import streamlit
 import streamlit as st
 
-# ========== SUPPRESS STREAMLIT UI MESSAGES ==========
+# ====== SUPPRESS STREAMLIT UI MESSAGES =====
 SUPPRESS_UI_MESSAGES = True  # Set to False when debugging
 
 if SUPPRESS_UI_MESSAGES:
@@ -384,7 +384,7 @@ def download_file_from_gdrive(file_id, destination):
         st.error(f"❌ Download error for {os.path.basename(destination)}: {e}")
         return False
 
-# ========== BIRD DATA LOADING ==========
+# BIRD DATA LOADING 
 @st.cache_resource
 def load_bird_data():
     """Load bird data with multiple location support"""
@@ -413,7 +413,7 @@ def load_bird_data():
 # Load bird data at startup
 bird_db = load_bird_data()
 
-# ========== VIDEO MODEL LOADING ==========
+# VIDEO MODEL LOADING
 @st.cache_resource
 def load_video_model():
     """Load video model with download from Google Drive and multiple location support"""
