@@ -1527,53 +1527,81 @@ def main():
                     st.session_state.bird_classifications = classifications
                     st.session_state.current_image = original_image
     
+    # 
     # Display results
-    if st.session_state.detection_complete and st.session_state.current_image is not None:
-        st.markdown("---")
-        st.markdown('<div class="section-title">🎯 ResNet34 Identification Results</div>', unsafe_allow_html=True)
+if st.session_state.detection_complete and st.session_state.current_image is not None:
+    st.markdown("---")
+    st.markdown('<div class="section-title">🎯 ResNet34 Identification Results</div>', unsafe_allow_html=True)
+    
+    detections = st.session_state.bird_detections
+    classifications = st.session_state.bird_classifications
+    
+    if not detections:
+        st.info("🔍 No birds detected in this image")
+    else:
+        # Metrics
+        col_metric1, col_metric2 = st.columns(2)
+        with col_metric1:
+            st.markdown('<div class="glass-metric">', unsafe_allow_html=True)
+            st.metric("Birds Identified", len(detections))
+            st.markdown('</div>', unsafe_allow_html=True)
         
-        detections = st.session_state.bird_detections
-        classifications = st.session_state.bird_classifications
+        with col_metric2:
+            st.markdown('<div class="glass-metric">', unsafe_allow_html=True)
+            if classifications:
+                avg_confidence = sum(conf for _, conf in classifications) / len(classifications)
+                st.metric("Avg Confidence", f"{avg_confidence:.1%}")
+            else:
+                st.metric("Avg Confidence", "N/A")
+            st.markdown('</div>', unsafe_allow_html=True)
         
-        if not detections:
-            st.info("🔍 No birds detected in this image")
-        else:
-            # Metrics
-            col_metric1, col_metric2 = st.columns(2)
-            with col_metric1:
-                st.markdown('<div class="glass-metric">', unsafe_allow_html=True)
-                st.metric("Birds Identified", len(detections))
-                st.markdown('</div>', unsafe_allow_html=True)
+        # ========== LOW CONFIDENCE WARNING ==========
+        if classifications and any(conf < 0.5 for _, conf in classifications):
+            st.warning("""
+            ⚠️ **Low Confidence Identification**
             
-            with col_metric2:
-                st.markdown('<div class="glass-metric">', unsafe_allow_html=True)
-                if classifications:
-                    avg_confidence = sum(conf for _, conf in classifications) / len(classifications)
-                    st.metric("Avg Confidence", f"{avg_confidence:.1%}")
-                else:
-                    st.metric("Avg Confidence", "N/A")
-                st.markdown('</div>', unsafe_allow_html=True)
+            The bird identification confidence is below 50%. This prediction may not be reliable.
+            Please consider:
+            - Uploading a clearer image
+            - Ensuring the bird is clearly visible
+            - Trying a different angle or lighting
+            """)
+        
+        # Process each bird
+        for i, ((box, det_conf), (species, class_conf)) in enumerate(zip(detections, classifications)):
+            st.markdown("---")
             
-            # Process each bird
-            for i, ((box, det_conf), (species, class_conf)) in enumerate(zip(detections, classifications)):
-                st.markdown("---")
-                
-                # Bird information
-                st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-                st.markdown(f"### 🐦 Bird #{i+1} - {species}")
-                
-                st.markdown(f"""
-                <div style="padding: 15px; background: rgba(255,255,255,0.1); border-radius: 8px;">
-                    <h4>ResNet34 Model Prediction</h4>
-                    <p><strong>Species:</strong> {species}</p>
-                    <p><strong>Confidence:</strong> {class_conf:.1%}</p>
-                    <p><strong>Detection Score:</strong> {det_conf:.1%}</p>
-                </div>
-                """, unsafe_allow_html=True)
-                st.markdown('</div>', unsafe_allow_html=True)
-                
-                # Store the species for video generation
-                st.session_state.selected_species_for_video = species
+            # Bird information with confidence-based styling
+            confidence_level = "high" if class_conf >= 0.7 else "medium" if class_conf >= 0.5 else "low"
+            
+            st.markdown(f'<div class="glass-card">', unsafe_allow_html=True)
+            
+            # Different emoji based on confidence
+            if class_conf >= 0.7:
+                confidence_emoji = "✅"
+            elif class_conf >= 0.5:
+                confidence_emoji = "⚠️"
+            else:
+                confidence_emoji = "❓"
+            
+            st.markdown(f"### {confidence_emoji} Bird #{i+1} - {species}")
+            
+            # Different background color based on confidence
+            confidence_color = "#d4edda" if class_conf >= 0.7 else "#fff3cd" if class_conf >= 0.5 else "#f8d7da"
+            
+            st.markdown(f"""
+            <div style="padding: 15px; background: {confidence_color}; border-radius: 8px; border-left: 4px solid {'#28a745' if class_conf >= 0.7 else '#ffc107' if class_conf >= 0.5 else '#dc3545'}">
+                <h4>ResNet34 Model Prediction</h4>
+                <p><strong>Species:</strong> {species}</p>
+                <p><strong>Confidence:</strong> {class_conf:.1%} <small>({confidence_level} confidence)</small></p>
+                <p><strong>Detection Score:</strong> {det_conf:.1%}</p>
+                {f'<p style="color: #856404;"><strong>Note:</strong> Low confidence prediction - consider retaking the photo</p>' if class_conf < 0.5 else ''}
+            </div>
+            """, unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Store the species for video generation (even if low confidence)
+            st.session_state.selected_species_for_video = species
         
         # Reset button
         if st.button("🔄 Analyze Another Image", type="secondary", use_container_width=True):
@@ -1585,7 +1613,6 @@ def main():
             st.session_state.generated_story = None
             st.session_state.used_images = None
             st.rerun()
-    
     # Story Video Generation Section
     st.markdown("---")
     st.markdown('<div class="section-title">🎬 AI Story Video Generator</div>', unsafe_allow_html=True)
