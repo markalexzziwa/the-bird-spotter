@@ -1,1 +1,13 @@
 streamlit
+torch
+torchvision
+pillow
+numpy
+opencv-python-headless
+pandas
+gtts
+moviepy
+imageio
+imageio-ffmpeg
+gdown
+requests
