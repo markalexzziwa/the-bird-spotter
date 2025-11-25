@@ -1531,7 +1531,7 @@ def main():
     # Display results
     if st.session_state.detection_complete and st.session_state.current_image is not None:
         st.markdown("---")
-        st.markdown('<div class="section-title">🎯 ResNet34 Identification Results</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">Identification Results</div>', unsafe_allow_html=True)
     
         detections = st.session_state.bird_detections
         classifications = st.session_state.bird_classifications
@@ -1539,7 +1539,6 @@ def main():
         if not detections:
             st.info("🔍 No birds detected in this image")
         else:
-            # Filter out low confidence predictions (below 50%)
             valid_detections = []
             valid_classifications = []
         
@@ -1552,10 +1551,8 @@ def main():
             if not valid_detections:
                 st.markdown("""
                 🚫 **No Bird Confidently Detected**
-            
-                The AI detected something but confidence is too low (below 50%) to make a reliable identification.
-            
-                Please try:
+                            
+                Please try again with:
                 - A clearer, closer photo of the bird
                 - Better lighting conditions
                 - Ensuring the bird is fully visible
@@ -1602,8 +1599,8 @@ def main():
                     <div style="padding: 15px; background: {confidence_color}; border-radius: 8px; border-left: 4px solid {'#28a745' if class_conf >= 0.7 else '#ffc107'}">
                         <h4>ResNet34 Model Prediction</h4>
                         <p><strong>Species:</strong> {species}</p>
-                        <p><strong>Confidence:</strong> {class_conf:.1%} <small>({confidence_level} confidence)</small></p>
-                        <p><strong>Detection Score:</strong> {det_conf:.1%}</p>
+                        <p><strong>Detection Confidence:</strong> {class_conf:.1%} <small>({confidence_level} confidence)</small></p>
+                        <p><strong>prediction Confidence:</strong> {det_conf:.1%}</p>
                     </div>
                     """, unsafe_allow_html=True)
                     st.markdown('</div>', unsafe_allow_html=True)
@@ -1629,7 +1626,7 @@ def main():
                 st.rerun()
     # Story Video Generation Section
     st.markdown("---")
-    st.markdown('<div class="section-title">🎬 AI Story Video Generator</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">🎬 Watch Video</div>', unsafe_allow_html=True)
     
     if not MOVIEPY_AVAILABLE:
         st.error("""
@@ -1651,12 +1648,12 @@ def main():
     else:
         st.markdown(f"""
         <div class="video-section">
-            <strong>📖 Enhanced AI Story Generation with Video</strong><br>
-            Generate comprehensive educational story videos featuring:
+            <strong>📖 Story Generation with Video</strong><br>
+            Watch a comprehensive educational story videos with:
             <br><br>
-            • <strong>Detailed AI-Generated Stories</strong>: Rich, educational narratives with ecological context<br>
+            • <strong>Detailed Stories</strong>: Rich, educational narratives with ecological context<br>
             • <strong>Professional Text-to-Speech Audio</strong>: Clear narration of detailed stories<br>
-            • <strong>Ken Burns Visual Effects</strong>: Beautiful pan and zoom animations on 8+ images<br>
+            • <strong>Ken Burns Visual Effects</strong>: Beautiful pan and zoom animations on other species images<br>
             • <strong>Multiple Bird Images</strong>: Showcases each species from various angles and settings<br>
             <br>
             <strong>Video Features:</strong> Ken Burns effects only | 8+ images per video | Detailed narration | HD Quality
@@ -1673,7 +1670,7 @@ def main():
 
         with col2:
             if st.session_state.get('selected_species_for_video'):
-                if st.button("🎬 Generate Story Video", use_container_width=True, type="primary"):
+                if st.button("🎬 Generate Video", use_container_width=True, type="primary"):
                     with st.spinner("Creating enhanced story video with Ken Burns effects..."):
                         video_path, story_text, used_images = video_generator.generate_video(
                             st.session_state.selected_species_for_video
@@ -1736,7 +1733,7 @@ def main():
                 
                 with col1:
                     st.download_button(
-                        label="📥 Download Story Video",
+                        label="📥 Download Video",
                         data=video_bytes,
                         file_name=f"uganda_bird_story_{st.session_state.selected_species_for_video.replace(' ', '_')}.mp4",
                         mime="video/mp4",
@@ -1747,7 +1744,7 @@ def main():
                     if st.session_state.get('generated_story'):
                         story_bytes = st.session_state.generated_story.encode('utf-8')
                         st.download_button(
-                            label="📝 Download Story Text",
+                            label="📝 Download Text",
                             data=story_bytes,
                             file_name=f"uganda_bird_story_{st.session_state.selected_species_for_video.replace(' ', '_')}.txt",
                             mime="text/plain",
