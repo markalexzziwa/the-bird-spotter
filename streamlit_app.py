@@ -1515,11 +1515,11 @@ def main():
         st.image(current_image, caption="Bird Photo for Analysis", use_column_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
-        if st.button("🔍 Identify Bird Species with ResNet34", type="primary", use_container_width=True):
+        if st.button("🔍 Detect Bird and Predict it's specie", type="primary", use_container_width=True):
             if not st.session_state.model_loaded:
                 st.error("❌ Model not loaded. Cannot make predictions.")
             else:
-                with st.spinner("Analyzing bird species using ResNet34..."):
+                with st.spinner("Analyzing species using ResNet34..."):
                     detections, classifications, original_image = bird_model.predict_bird_species(current_image)
                     
                     st.session_state.detection_complete = True
@@ -1566,7 +1566,7 @@ def main():
                 col_metric1, col_metric2 = st.columns(2)
                 with col_metric1:
                     st.markdown('<div class="glass-metric">', unsafe_allow_html=True)
-                    st.metric("Birds Confidently Identified", len(valid_detections))
+                    st.metric("Most clear bird detected", len(valid_detections))
                     st.markdown('</div>', unsafe_allow_html=True)
             
                 with col_metric2:
@@ -1597,7 +1597,7 @@ def main():
                 
                     st.markdown(f"""
                     <div style="padding: 15px; background: {confidence_color}; border-radius: 8px; border-left: 4px solid {'#28a745' if class_conf >= 0.7 else '#ffc107'}">
-                        <h4>ResNet34 Model Prediction</h4>
+                        <h4>Prediction</h4>
                         <p><strong>Species:</strong> {species}</p>
                         <p><strong>Detection Confidence:</strong> {class_conf:.1%} <small>({confidence_level} confidence)</small></p>
                         <p><strong>prediction Confidence:</strong> {det_conf:.1%}</p>
