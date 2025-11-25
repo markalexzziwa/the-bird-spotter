@@ -1543,7 +1543,7 @@ def main():
             valid_classifications = []
         
             for (box, det_conf), (species, class_conf) in zip(detections, classifications):
-                if class_conf >= 0.3:  # Only keep predictions with 50%+ confidence
+                if class_conf >= 0.25:  # Only keep predictions with 25%+ confidence
                     valid_detections.append((box, det_conf))
                     valid_classifications.append((species, class_conf))
         
@@ -1611,7 +1611,7 @@ def main():
             # Show info about filtered out low-confidence detections
             low_confidence_count = len(detections) - len(valid_detections)
             if low_confidence_count > 0:
-                st.info(f"ℹ️ {low_confidence_count} low-confidence detection(s) were filtered out (confidence < 30%)")
+                st.info(f"ℹ️ {low_confidence_count} low-confidence detection(s) were filtered out (confidence < 25%)")
         
             # Reset button
             if st.button("🔄 Analyze Another Image", type="secondary", use_container_width=True):
