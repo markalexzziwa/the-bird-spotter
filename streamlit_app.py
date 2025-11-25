@@ -1550,7 +1550,7 @@ def main():
         
             # If no valid detections after filtering
             if not valid_detections:
-                st.error("""
+                st.markdown("""
                 🚫 **No Bird Confidently Detected**
             
                 The AI detected something but confidence is too low (below 50%) to make a reliable identification.
