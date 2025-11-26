@@ -1431,9 +1431,9 @@ def main():
     # Welcome message
     st.markdown("""
     <div class="glass-card">
-        <strong>🦜 Welcome to Uganda Bird Spotter!</strong><br>
-        This app uses AI models for bird identification and story generation. 
-        Upload bird photos for identification, then generate AI-powered educational story videos 
+        <strong>Welcome to Uganda Bird Spotter!</strong><br>
+        This platform uses AI models for bird identification and story generation. 
+        Upload bird photos for identification, then generate an educational story videos 
         with narrated audio and beautiful visual effects using Ken Burns animation.
     </div>
     """, unsafe_allow_html=True)
@@ -1472,7 +1472,6 @@ def main():
     
     if st.session_state.active_method == "upload":
         st.markdown('<div class="section-title">Upload Bird Photo</div>', unsafe_allow_html=True)
-        st.markdown('<div class="glass-upload">', unsafe_allow_html=True)
         uploaded_file = st.file_uploader(
             "Choose a bird image", 
             type=['jpg', 'jpeg', 'png'],
@@ -1492,7 +1491,6 @@ def main():
     
     else:
         st.markdown('<div class="section-title">Capture Live Photo</div>', unsafe_allow_html=True)
-        st.markdown('<div class="glass-upload">', unsafe_allow_html=True)
         camera_image = st.camera_input(
             "Take a picture of a bird",
             help="Capture birds for identification",
