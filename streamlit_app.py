@@ -1350,10 +1350,7 @@ def initialize_system():
                 st.error("❌ System initialization failed. Please check the requirements and internet connection.")
 
 def main():
-    # Initialize the system
     initialize_system()
-    
-    # Check if system initialized properly
     if not st.session_state.get('system_initialized', False):
         st.error("""
         ❌ System failed to initialize properly. 
@@ -1636,16 +1633,14 @@ def main():
             <strong>📖 Story Generation with Video</strong><br>
             Watch a comprehensive educational story videos with:
             <br><br>
-            • <strong>Detailed Stories</strong>: Rich, educational narratives with ecological context<br>
-            • <strong>Professional Text-to-Speech Audio</strong>: Clear narration of detailed stories<br>
-            • <strong>Ken Burns Visual Effects</strong>: Beautiful pan and zoom animations on other species images<br>
-            • <strong>Multiple Bird Images</strong>: Showcases each species from various angles and settings<br>
+            <strong>Detailed Stories</strong>: Rich, educational narratives with ecological context<br>
+            Clear narration of detailed stories<br>
+            Other species images<br>
             <br>
             <strong>Video Features:</strong> Ken Burns effects only | 8+ images per video | Detailed narration | HD Quality
         </div>
         """, unsafe_allow_html=True)
         
-        # Video generation options - Only Ken Burns effect
         col1, col2 = st.columns([3, 1])
         
         with col1:
