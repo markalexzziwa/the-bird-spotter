@@ -1370,9 +1370,8 @@ def main():
     bird_model = st.session_state.bird_model
     video_generator = st.session_state.video_generator
     
-    # Sidebar with logo and bird list
+    # Sidebar
     with st.sidebar:
-        # Logo at the top of sidebar
         try:
             base64_logo = get_base64_image("ugb1.png")
             st.markdown(f'<img src="data:image/png;base64,{base64_logo}" class="sidebar-logo" alt="Bird Spotter Logo">', unsafe_allow_html=True)
@@ -1381,7 +1380,7 @@ def main():
         
         st.markdown('<div class="sidebar-title">Uganda Bird Spotter</div>', unsafe_allow_html=True)
         
-        st.markdown("### 🦅 Detectable Birds")
+        st.markdown("### Detectable Birds")
         st.markdown(f"**Total Species:** {len(bird_model.bird_species)}")
         
         # Bird list with scroll
@@ -1507,13 +1506,12 @@ def main():
             except Exception as e:
                 st.error(f"❌ Error loading camera image: {e}")
     
-    # Display image and analysis button
     if current_image is not None:
         st.markdown('<div class="glass-card">', unsafe_allow_html=True)
         st.image(current_image, caption="Bird Photo for Analysis", use_column_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
-        if st.button("🔍 Detect Bird and Predict it's specie", type="primary", use_container_width=True):
+        if st.button("Detect Bird and Predict it's specie", type="primary", use_container_width=True):
             if not st.session_state.model_loaded:
                 st.error("❌ Model not loaded. Cannot make predictions.")
             else:
@@ -1525,7 +1523,6 @@ def main():
                     st.session_state.bird_classifications = classifications
                     st.session_state.current_image = original_image
     
-    # 
     # Display results
     if st.session_state.detection_complete and st.session_state.current_image is not None:
         st.markdown("---")
@@ -1541,26 +1538,23 @@ def main():
             valid_classifications = []
         
             for (box, det_conf), (species, class_conf) in zip(detections, classifications):
-                if class_conf >= 0.40:  # Only keep predictions with 40%+ confidence
+                if class_conf >= 0.44:  # Only keep predictions with 44%+ confidence
                     valid_detections.append((box, det_conf))
                     valid_classifications.append((species, class_conf))
         
-            # If no valid detections after filtering
             if not valid_detections:
                 st.markdown("""
-                🚫 **No Bird Confidently Detected**
+                🚫 **Bird Detection Unsuccesfull**
                             
                 Please try again with:
-                - A clearer, closer photo of the bird
-                - Better lighting conditions
                 - Ensuring the bird is fully visible
+                - Better lighting conditions
+                - A clearer, closer photo of the bird
                 - A different angle or background
                 """)
             
-                # Don't set any species for video generation
                 st.session_state.selected_species_for_video = None
             else:
-                # Metrics for valid detections only
                 col_metric1, col_metric2 = st.columns(2)
                 with col_metric1:
                     st.markdown('<div class="glass-metric">', unsafe_allow_html=True)
@@ -1576,21 +1570,17 @@ def main():
                         st.metric("Avg Confidence", "N/A")
                     st.markdown('</div>', unsafe_allow_html=True)
             
-                # Show filtered results
                 for i, ((box, det_conf), (species, class_conf)) in enumerate(zip(valid_detections, valid_classifications)):
                     st.markdown("---")
                 
-                    # Bird information with confidence-based styling
                     confidence_level = "high" if class_conf >= 0.5 else "medium"
                 
                     st.markdown(f'<div class="glass-card">', unsafe_allow_html=True)
                 
-                    # Different emoji based on confidence
                     confidence_emoji = "✅" if class_conf >= 0.5 else "⚠️"
                 
                     st.markdown(f"### {confidence_emoji} Bird #{i+1} - {species}")
                 
-                    # Different background color based on confidence
                     confidence_color = "#d4edda" if class_conf >= 0.7 else "#fff3cd"
                 
                     st.markdown(f"""
@@ -1603,15 +1593,12 @@ def main():
                     """, unsafe_allow_html=True)
                     st.markdown('</div>', unsafe_allow_html=True)
                 
-                    # Store the species for video generation (only for confident predictions)
                     st.session_state.selected_species_for_video = species
         
-            # Show info about filtered out low-confidence detections
             low_confidence_count = len(detections) - len(valid_detections)
             if low_confidence_count > 0:
                 st.info(f"ℹ️ {low_confidence_count} low-confidence detection(s) were filtered out (confidence < 40%)")
         
-            # Reset button
             if st.button("🔄 Analyze Another Image", type="secondary", use_container_width=True):
                 st.session_state.detection_complete = False
                 st.session_state.bird_detections = []
